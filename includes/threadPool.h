@@ -12,18 +12,20 @@
 //========TYPES===========//
 typedef struct threadPool_s
 {
-    void* others;
-    pthread_mutex_t* mux;
+    pthread_mutex_t lock;                   // A mutex to synchronize access to the task queue. Ensures that only one thread at a time modifies the queue.
+    pthread_cond_t  notify;                 // A condition variable used to notify worker threads when new tasks are available.
+    pthread_t   threadsArray[MAX_THREADS];  //
+    task_t      taskQueue[MAX_TASKS];       //
+    int         nqueued;                    // The number of tasks currently in the queue.
+    int         queue_top;                  // The index of the first task in the queue.
+    int         queue_last;                 // The index of the last task in the queue.
+    int         stop;                       // A flag to indicate if the pool should stop executing (used for shutdown).
 }threadPool_t;
 
 
 //====FUN DECLARATIONS===//
-void* executeTaskFun_f( task_t task );
+void threadpoolInit_f( threadPool_t* src );
 
-void addTaskToQueue_f( int pos, task_t task);
-
-void shiftElementsTaskQueue_f();
-
-void* threadPoolTaskAssigner_f( void* src );
+void* threadpoolTaskAssigner_f( void* src );
 
 #endif
