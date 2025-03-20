@@ -50,7 +50,8 @@ void threadpoolDestroy_f( threadPool_t* src )
 {
     pthread_mutex_lock( &(src->lock) );         // Make sure that only one thread access this function
     src->stop = true;                           // Ensured the condition
-    pthread_cond_broadcast( &(src->notify) );   // Ensure that all the threads get the notification 
+    pthread_cond_broadcast( &(src->notify) );   // Ensure that all the threads get the notification
+    pthread_mutex_unlock( &(src->lock) );       // Release the mutex
     
     threadsDestruction_f( src );                //Join the threads
 
