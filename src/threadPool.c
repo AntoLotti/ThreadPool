@@ -39,10 +39,10 @@ void threadpoolInit_f( threadPool_t* src )
 
     threadsCreation_f( src );         //Creation of the threads
 
-    src->nqueued    = 0;    // Initialization of the index
-    src->queue_top  = 0;    // Initialization of the index 
-    src->queue_last = 0;    // Initialization of the index
-    src->stop       = 0;    // Initialization of the index 
+    src->nqueued    = 0;        // Initialization of the index
+    src->queue_top  = 0;        // Initialization of the index 
+    src->queue_last = 0;        // Initialization of the index
+    src->stop       = false;    // Initialization of the index 
 
 }
 
@@ -51,10 +51,49 @@ void threadpoolDestroy_f( threadPool_t* src )
     pthread_mutex_destroy( &(src->lock) );      // Destroy the mutex
     pthread_cond_destroy( &(src->notify) );     // Destroy the condition variable
 
-    threadpoolDestroy_f( src );     //Join the threads
+    threadsDestruction_f( src );     //Join the threads
 }
 
 void* threadpoolTaskAssigner_f( void* src )
 {
+    threadPool_t* thpool = (threadPool_t*)src ;
 
+    while ( 1 )
+    {
+        // Lock the mutex so only one thread can modify the queue
+        pthread_mutex_lock( &(thpool->lock) );
+        
+        // Check if the Queue is empty, if it's wait untile there are some task
+        while ( thpool->nqueued == 0 && !(thpool->stop) )
+        {
+            pthread_cond_wait( &(thpool->notify), &(thpool->lock) );
+        }
+
+        // Check if the threadpool must stop
+        if ( thpool->stop == true )
+        {
+            pthread_mutex_unlock( &(thpool->lock) );
+            pthread_exit( &(thpool->lock) );   
+            //return NULL;
+        }
+        
+        // Assigne a task 
+        task_t taskTh = {
+            .taskAction = NULL,
+            .arg        = NULL,
+        };
+        taskTh = thpool->taskQueue[ thpool->queue_top ];
+
+        // Move the task in the queue (Circular Queues)
+        thpool->queue_top = (thpool->queue_top + 1) % MAX_TASKS;
+        thpool->nqueued--;
+
+        // Free the mutex
+        pthread_mutex_unlock( &(thpool->lock) );
+
+        // Ejecute the task
+        (*(taskTh.taskAction))( taskTh.arg );
+    }
+    
+    return NULL;
 }

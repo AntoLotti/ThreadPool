@@ -19,13 +19,17 @@ typedef struct threadPool_s
     int         nqueued;                    // The number of tasks currently in the queue.
     int         queue_top;                  // The index of the first task in the queue.
     int         queue_last;                 // The index of the last task in the queue.
-    int         stop;                       // A flag to indicate if the pool should stop executing (used for shutdown).
+    bool        stop;                       // A flag to indicate if the pool should stop executing (used for shutdown; true to stop ).
 }threadPool_t;
 
 
 //====FUN DECLARATIONS===//
 void threadpoolInit_f( threadPool_t* src );
 
+void threadpoolDestroy_f( threadPool_t* src );
+
 void* threadpoolTaskAssigner_f( void* src );
+
+void addTaskToQueue( threadPool_t* dst, task_t src );
 
 #endif
