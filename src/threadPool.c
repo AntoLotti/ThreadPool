@@ -39,12 +39,36 @@ void threadpoolInit_f( threadPool_t* src )
 
     threadsCreation_f( src );         //Creation of the threads
 
-    src->nqueued    = 0;        // Initialization of the index
+    src->numTasks    = 0;       // Initialization of the index
     src->queue_top  = 0;        // Initialization of the index 
     src->queue_last = 0;        // Initialization of the index
     src->stop       = false;    // Initialization of the index 
 
 }
+
+void addTaskToQueue( threadPool_t* dst, void* arg, void* (*fun)( void* arg ) )
+{
+    pthread_mutex_lock( &(dst->lock) );
+
+    // Find the next position where to put the task (Circular Queues)
+    int nextTaskpos = (dst->queue_top + 1) % MAX_TASKS;
+
+    // Check the length of the queue
+    if ( dst->numTasks < MAX_TASKS && dst->queue_last != MAX_TASKS )
+    {   
+        // Add the task to the queue 
+        dst->taskQueue[ nextTaskpos ].arg = arg;
+        dst->taskQueue[ nextTaskpos ].taskAction = fun;
+        dst->queue_last = nextTaskpos;
+        dst->numTasks++;
+
+        // Notified  all threads that there is a task in the queue
+        pthread_cond_broadcast( &(dst->notify) ); 
+    }
+    
+    pthread_mutex_unlock( &(dst->lock) );
+}
+
 
 void threadpoolDestroy_f( threadPool_t* src )
 {
@@ -70,7 +94,7 @@ void* threadpoolTaskAssigner_f( void* src )
         pthread_mutex_lock( &(thpool->lock) );
         
         // Check if the Queue is empty, if it's wait untile there are some task
-        while ( thpool->nqueued == 0 && !(thpool->stop) )
+        while ( thpool->numTasks == 0 && !(thpool->stop) )
         {
             pthread_cond_wait( &(thpool->notify), &(thpool->lock) );
         }
@@ -92,7 +116,7 @@ void* threadpoolTaskAssigner_f( void* src )
 
         // Move the task in the queue (Circular Queues)
         thpool->queue_top = (thpool->queue_top + 1) % MAX_TASKS;
-        thpool->nqueued--;
+        thpool->numTasks--;
 
         // Free the mutex
         pthread_mutex_unlock( &(thpool->lock) );
