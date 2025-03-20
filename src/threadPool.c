@@ -48,10 +48,15 @@ void threadpoolInit_f( threadPool_t* src )
 
 void threadpoolDestroy_f( threadPool_t* src )
 {
+    pthread_mutex_lock( &(src->lock) );         // Make sure that only one thread access this function
+    src->stop = true;                           // Ensured the condition
+    pthread_cond_broadcast( &(src->notify) );   // Ensure that all the threads get the notification 
+    
+    threadsDestruction_f( src );                //Join the threads
+
     pthread_mutex_destroy( &(src->lock) );      // Destroy the mutex
     pthread_cond_destroy( &(src->notify) );     // Destroy the condition variable
 
-    threadsDestruction_f( src );     //Join the threads
 }
 
 void* threadpoolTaskAssigner_f( void* src )
