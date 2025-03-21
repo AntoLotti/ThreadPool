@@ -15,15 +15,7 @@ typedef struct task_s
     void* arg;                          //Pointer to the arguments of the functions
 }task_t;
 
-typedef struct parameters_s
-{
-    int argA;
-    int argB;
-}parameters_t;
-
 //====FUN DECLARATIONS===//
-bool taskExist_f( task_t task );
-
 void* tasksAcction_f( void* arg );
 
 task_t taskGenerator_f();

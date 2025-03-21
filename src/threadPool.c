@@ -8,7 +8,7 @@ static bool threadsCreation_f( threadPool_t* src )
 {
     for (int i = 0; i < MAX_THREADS; i++)
     {
-        if ( pthread_create( src->threadsArray[ i ], NULL, &threadpoolTaskAssigner_f, src ) != 0  )
+        if ( pthread_create( &(src->threadsArray[ i ]), NULL, &threadpoolTaskAssigner_f, src ) != 0  )
         {
             perror("Error creating the threads");
             return false;
@@ -39,7 +39,7 @@ void threadpoolInit_f( threadPool_t* src )
 
     threadsCreation_f( src );         //Creation of the threads
 
-    src->numTasks    = 0;       // Initialization of the index
+    src->numTasks   = 0;        // Initialization of the index
     src->queue_top  = 0;        // Initialization of the index 
     src->queue_last = 0;        // Initialization of the index
     src->stop       = false;    // Initialization of the index 
@@ -51,7 +51,7 @@ void addTaskToQueue( threadPool_t* dst, void* arg, void* (*fun)( void* arg ) )
     pthread_mutex_lock( &(dst->lock) );
 
     // Find the next position where to put the task (Circular Queues)
-    int nextTaskpos = (dst->queue_top + 1) % MAX_TASKS;
+    int nextTaskpos = (dst->queue_last + 1) % MAX_TASKS;
 
     // Check the length of the queue
     if ( dst->numTasks < MAX_TASKS && dst->queue_last != MAX_TASKS )
