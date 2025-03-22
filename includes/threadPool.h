@@ -3,13 +3,19 @@
 
 //========INCLUDES========//
 #include <common.h>
-#include <task.h> 
+//#include <task.h> 
 
 //========DEFINES=========//
 #define MAX_THREADS     5
 #define MAX_TASKS       40
 
 //========TYPES===========//
+typedef struct task_s
+{
+    void* (*taskAction)( void* arg );       //Pointer to a function that return a void pointer and recive a void pointer as argument
+    void* arg;                              //Pointer to the arguments of the functions
+}task_t;
+
 typedef struct threadPool_s
 {
     pthread_mutex_t lock;                   // A mutex to synchronize access to the task queue. Ensures that only one thread at a time modifies the queue.

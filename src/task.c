@@ -3,24 +3,11 @@
 #include <task.h> 
 
 //========FUN DEF=========//
-void* tasksAcction_f( void* arg )
+void* example_task(void* arg) 
 {
     int num = *(int*)arg;
-    printf( "\n\t > the number is: %d ", num );
-    sleep(1);
     free(arg);
+    printf("Processing task %d\n", num);
+    sleep(2);  // Simulate task work
     return NULL;
-}
-
-task_t taskGenerator_f()
-{
-    int* num_p = malloc( sizeof(int) );
-    *num_p = ( rand() % 5 );
-
-    task_t t ={
-        .arg = num_p,
-        .taskAction = &(tasksAcction_f),
-    };
-    
-    return t;
 }

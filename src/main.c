@@ -2,6 +2,8 @@
 #include <common.h>
 #include <threadPool.h>
 
+//include the tasks
+#include <task.h>
 //========TH CONTROL======//
 
 
@@ -14,13 +16,14 @@ int main( int argc, char* argv[] )
     threadPool_t thpool;   
     threadpoolInit_f( &thpool );
 
-    for (size_t i = 0; i < 5; i++)
-    {
-        task_t task = taskGenerator_f();
-        addTaskToQueue( &thpool, task.arg, task.taskAction );
+    //Creating the tasks
+    for (int i = 0; i < MAX_TASKS; i++) {
+        int* task_num = malloc(sizeof(int));
+        *task_num = i;
+        addTaskToQueue(&thpool, task_num, example_task );
     }
     
-    sleep(5);
+    sleep(15);
 
     threadpoolDestroy_f( &thpool );
 

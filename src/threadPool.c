@@ -34,15 +34,15 @@ static bool threadsDestruction_f( threadPool_t* src )
 
 void threadpoolInit_f( threadPool_t* src )
 {
-    pthread_mutex_init( &(src->lock), NULL );   //Initialization of the mutex
-    pthread_cond_init( &(src->notify), NULL );  //Initialization of the condition variable
-
-    threadsCreation_f( src );         //Creation of the threads
-
     src->numTasks   = 0;        // Initialization of the index
     src->queue_top  = 0;        // Initialization of the index 
     src->queue_last = 0;        // Initialization of the index
     src->stop       = false;    // Initialization of the index 
+
+    pthread_mutex_init( &(src->lock), NULL );   //Initialization of the mutex
+    pthread_cond_init( &(src->notify), NULL );  //Initialization of the condition variable
+
+    threadsCreation_f( src );   //Creation of the threads
 
 }
 
@@ -54,7 +54,7 @@ void addTaskToQueue( threadPool_t* dst, void* arg, void* (*fun)( void* arg ) )
     int nextTaskpos = (dst->queue_last + 1) % MAX_TASKS;
 
     // Check the length of the queue
-    if ( dst->numTasks < MAX_TASKS && dst->queue_last != MAX_TASKS )
+    if ( dst->numTasks < MAX_TASKS )
     {   
         // Add the task to the queue 
         dst->taskQueue[ nextTaskpos ].arg = arg;
@@ -108,11 +108,7 @@ void* threadpoolTaskAssigner_f( void* src )
         }
         
         // Assigne a task 
-        task_t taskTh = {
-            .taskAction = NULL,
-            .arg        = NULL,
-        };
-        taskTh = thpool->taskQueue[ thpool->queue_top ];
+        task_t taskTh = thpool->taskQueue[ thpool->queue_top ];
 
         // Move the task in the queue (Circular Queues)
         thpool->queue_top = (thpool->queue_top + 1) % MAX_TASKS;
