@@ -15,6 +15,7 @@ CCOBJFLAGS	:= $(CXXFLAGS) -c
 SRC_DIR	:= 	src
 INC_DIR	:=	includes
 LIB_DIR	:=	lib
+TST_DIR	:=	test
 OBJ_DIR	:=	obj
 BIN_DIR	:=	bin
 DOC_DIR	:=	doc
@@ -36,6 +37,12 @@ OBJ_2 	:= $(OBJ_DIR)/$(NAME2).o
 NAME3	:= threadPool
 SRC_3 	:= $(SRC_DIR)/$(NAME3).c
 OBJ_3 	:= $(OBJ_DIR)/$(NAME3).o
+
+#====TESTS====#
+TEST1		:=  
+TST_SRC_1	:=	$(TST_DIR)/$(TEST1).c
+TST_OBJ_1	:=	$(OBJ_DIR)/$(TEST1).o
+
 
 #==============INCLUDES================#
 INC     := -I./ -I ./$(INC_DIR)
@@ -107,7 +114,7 @@ $(OBJ_3): $(SRC_3)
 	@echo "----------------------"
 
 setup:
-	mkdir -p $(SRC_DIR) $(INC_DIR) $(OBJ_DIR) $(BIN_DIR) $(DOC_DIR)
+	mkdir -p $(SRC_DIR) $(INC_DIR) $(OBJ_DIR) $(BIN_DIR) $(DOC_DIR) $(TST_DIR)
 
 clean:
 	rm -f $(OBJ_DIR)/* 

@@ -30,12 +30,12 @@ typedef struct threadPool_s
 
 
 //====FUN DECLARATIONS===//
-void threadpoolInit_f( threadPool_t* src );
+void pthreadpool_init( threadPool_t* src );
 
-void addTaskToQueue( threadPool_t* dst, void* arg, void* (*fun)( void* arg ) );
+void pthreadpool_add_task( threadPool_t* dst, void* arg, void* (*fun)( void* arg ) );
 
-void threadpoolDestroy_f( threadPool_t* src );
+void pthreadpool_destroy( threadPool_t* src );
 
-void* threadpoolTaskAssigner_f( void* src );
+void* pthreadpool_assigner( void* src );
 
 #endif

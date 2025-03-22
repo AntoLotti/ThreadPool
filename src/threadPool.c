@@ -4,11 +4,11 @@
 
 
 //========FUN DEF=========//
-static bool threadsCreation_f( threadPool_t* src )
+static bool creator_pthreads( threadPool_t* src )
 {
     for (int i = 0; i < MAX_THREADS; i++)
     {
-        if ( pthread_create( &(src->threadsArray[ i ]), NULL, &threadpoolTaskAssigner_f, src ) != 0  )
+        if ( pthread_create( &(src->threadsArray[ i ]), NULL, &pthreadpool_assigner, src ) != 0  )
         {
             perror("Error creating the threads");
             return false;
@@ -18,7 +18,7 @@ static bool threadsCreation_f( threadPool_t* src )
     return true;
 }
 
-static bool threadsDestruction_f( threadPool_t* src )
+static bool destructor_pthreads( threadPool_t* src )
 {
     for (int i = 0; i < MAX_THREADS; i++)
     {
@@ -32,7 +32,7 @@ static bool threadsDestruction_f( threadPool_t* src )
     return true;
 }
 
-void threadpoolInit_f( threadPool_t* src )
+void pthreadpool_init( threadPool_t* src )
 {
     src->numTasks   = 0;        // Initialization of the index
     src->queue_top  = 0;        // Initialization of the index 
@@ -42,11 +42,11 @@ void threadpoolInit_f( threadPool_t* src )
     pthread_mutex_init( &(src->lock), NULL );   //Initialization of the mutex
     pthread_cond_init( &(src->notify), NULL );  //Initialization of the condition variable
 
-    threadsCreation_f( src );   //Creation of the threads
+    creator_pthreads( src );   //Creation of the threads
 
 }
 
-void addTaskToQueue( threadPool_t* dst, void* arg, void* (*fun)( void* arg ) )
+void pthreadpool_add_task( threadPool_t* dst, void* arg, void* (*fun)( void* arg ) )
 {
     pthread_mutex_lock( &(dst->lock) );
 
@@ -70,21 +70,21 @@ void addTaskToQueue( threadPool_t* dst, void* arg, void* (*fun)( void* arg ) )
 }
 
 
-void threadpoolDestroy_f( threadPool_t* src )
+void pthreadpool_destroy( threadPool_t* src )
 {
     pthread_mutex_lock( &(src->lock) );         // Make sure that only one thread access this function
     src->stop = true;                           // Ensured the condition
     pthread_cond_broadcast( &(src->notify) );   // Ensure that all the threads get the notification
     pthread_mutex_unlock( &(src->lock) );       // Release the mutex
     
-    threadsDestruction_f( src );                //Join the threads
+    destructor_pthreads( src );                 //Join the threads
 
     pthread_mutex_destroy( &(src->lock) );      // Destroy the mutex
     pthread_cond_destroy( &(src->notify) );     // Destroy the condition variable
 
 }
 
-void* threadpoolTaskAssigner_f( void* src )
+void* pthreadpool_assigner( void* src )
 {
     threadPool_t* thpool = (threadPool_t*)src ;
 
