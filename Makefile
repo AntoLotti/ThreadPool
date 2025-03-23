@@ -1,5 +1,4 @@
 #============NAMES INFO===============#
-TEST_NAME	:=	test_exce		#Testing 	executable name
 DEBG_NAME	:=	debg_exce		#Debuging 	executable name
 FINAL_NAME	:=	final_exce		#Final 		executable name
 DEF_NAME	=	exe
@@ -19,6 +18,8 @@ TST_DIR	:=	test
 OBJ_DIR	:=	obj
 BIN_DIR	:=	bin
 DOC_DIR	:=	doc
+
+MOCKS_DIR := mocks
 
 EXE_DIR :=	$(OBJ_DIR)
 
@@ -48,9 +49,9 @@ TST_OBJ_1	:=	$(OBJ_DIR)/$(TEST1).o
 INC     := -I./ -I ./$(INC_DIR)
 
 #==============WARNINGS================#
-WALL	:=	-Wall -Wextra -Werror -Wwrite-strings -Wno-parentheses -pedantic \
-     -Warray-bounds -Wno-unused-variable -Wno-unused-function \
-     -Wno-unused-parameter -Wno-unused-result
+WALL	:=	-Wall -Wextra -Werror -Wwrite-strings -pedantic -Warray-bounds \
+	-Wformat-overflow -Wformat-truncation -Wstringop-overflow \
+	-Wstringop-truncation
 
 #==============LIBRARIES===============#
 LIBS    := -L./ -L/$(LIB_DIR)
@@ -89,8 +90,11 @@ ALL_OBJS = $(OBJ_1) $(OBJ_2) $(OBJ_3)
 
 #===============TARGETS=================#
 all: $(FINAL_EXE)
-	@echo "Compilando proyecto..."
+	@printf "\n"
 	@echo "----------------------"
+	@echo "Compiling project....."
+	@echo "----------------------"
+	@printf "\n"
 
 $(FINAL_EXE): $(ALL_OBJS)
 	$(CXX) $^ -o $@ $(LDFFLAGS)
@@ -115,6 +119,8 @@ $(OBJ_3): $(SRC_3)
 
 setup:
 	mkdir -p $(SRC_DIR) $(INC_DIR) $(OBJ_DIR) $(BIN_DIR) $(DOC_DIR) $(TST_DIR)
+	mkdir -p $(TST_DIR)/$(MOCKS_DIR)
+	mkdir -p $(OBJ_DIR)/$(TST_DIR)
 	doxygen -g
 
 doc:
