@@ -115,6 +115,10 @@ $(OBJ_3): $(SRC_3)
 
 setup:
 	mkdir -p $(SRC_DIR) $(INC_DIR) $(OBJ_DIR) $(BIN_DIR) $(DOC_DIR) $(TST_DIR)
+	doxygen -g
+
+doc:
+	doxygen Doxyfile
 
 clean:
 	rm -f $(OBJ_DIR)/* 

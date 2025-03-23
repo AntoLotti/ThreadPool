@@ -30,10 +30,37 @@ typedef struct threadPool_s
 
 
 //====FUN DECLARATIONS===//
+
+/**
+ * @brief pthreadpool_init
+ * @details function to initialice a threadpool
+ * @author Antonio Lotti 
+ * @date 23/03/2025
+ * @param src pointer to a threadPool_t structure
+ * @return nothing
+ */
 void pthreadpool_init( threadPool_t* src );
 
-void pthreadpool_add_task( threadPool_t* dst, void* arg, void* (*fun)( void* arg ) );
+/**
+ * @brief pthreadpool_add_task
+ * @details function to add a task to the queue of the threadpool
+ * @author Antonio Lotti 
+ * @date 23/03/2025
+ * @param dst pointer to a threadPool_t structure
+ * @param arg void pointer to the arguments of the task
+ * @param fun pointer to the task function
+ * @return nothing
+ */
+void pthreadpool_add_task( threadPool_t* dst, void* (*fun)( void* arg ), void* arg );
 
+/**
+ * @brief pthreadpool_destroy
+ * @details function to destroy a threadpool structure
+ * @author Antonio Lotti 
+ * @date 23/03/2025
+ * @param src pointer to a threadPool_t structure
+ * @return nothing
+ */
 void pthreadpool_destroy( threadPool_t* src );
 
 void* pthreadpool_assigner( void* src );

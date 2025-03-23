@@ -46,7 +46,7 @@ void pthreadpool_init( threadPool_t* src )
 
 }
 
-void pthreadpool_add_task( threadPool_t* dst, void* arg, void* (*fun)( void* arg ) )
+void pthreadpool_add_task( threadPool_t* dst, void* (*fun)( void* arg ), void* arg )
 {
     pthread_mutex_lock( &(dst->lock) );
 
