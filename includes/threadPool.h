@@ -3,13 +3,32 @@
 
 //========INCLUDES========//
 #include <common.h>
-//#include <task.h> 
 
 //========DEFINES=========//
 #define MAX_THREADS     5
 #define MAX_TASKS       40
 
 //========TYPES===========//
+typedef enum thpool_error_e
+{
+    PROBLEM_NA              = 0,
+    
+    PROBLEM_EAGAIN          = 1,    //Insufficient   resources  to  create  anothe thread.
+    PROBLEM_EINVAL          = 2,    //Invalid settings in attr.
+    PROBLEM_EPERM           = 3,    //No  permission  to  set the scheduling policy and parameters specified in attr.
+    PROBLEM_MX_EAGAIN       = 4,
+    PROBLEM_MX_EINVAL       = 5,    //The  mutex  has not been properly initialized.
+    PROBLEM_MX_EPERM        = 6,
+    PROBLEM_MX_ENOMEM       = 7,
+    PROBLEM_MX_EBUSY        = 8,    //The mutex has already been initialized and is in use.
+    PROBLEM_JOIN_EDEADLK    = 9,    //A  deadlock  was  detected or  thread specifies the calling thread.
+    PROBLEM_JOIN_EINVAL     = 10,   //thread is not a joinable thread.
+    PROBLEM_JOIN_EINVAL     = 11,   //Another  thread  is  already  waiting to join with this thread.
+    PROBLEM_JOIN_ESRCH      = 12,   //No thread with the ID thread could be found.
+    
+    PROBLEM_UNEXPECTED  = 99,
+} thpool_error_t;
+
 typedef struct task_s
 {
     void* (*taskAction)( void* arg );       //Pointer to a function that return a void pointer and recive a void pointer as argument
@@ -30,7 +49,7 @@ typedef struct threadPool_s
 
 
 //====FUN DECLARATIONS===//
-void pthreadpool_init( threadPool_t* src );
+thpool_error_t pthreadpool_init( threadPool_t* src );
 
 void pthreadpool_add_task( threadPool_t* dst, void* arg, void* (*fun)( void* arg ) );
 

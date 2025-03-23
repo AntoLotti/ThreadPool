@@ -2,23 +2,94 @@
 #include <common.h>
 #include <threadPool.h>
 
-
 //========FUN DEF=========//
-static bool creator_pthreads( threadPool_t* src )
+
+static thpool_error_t pthread_cond_init_error_transform( int src )
+{
+    return PROBLEM_UNEXPECTED;
+}
+
+static thpool_error_t pthread_mutex_init_error_transform( int src )
+{
+    switch (src) 
+    {
+        case EAGAIN:
+            return PROBLEM_MX_EAGAIN;
+            break;
+        case ENOMEM:
+            return PROBLEM_MX_ENOMEM;
+            break;
+        case EPERM:
+            return PROBLEM_MX_EPERM;
+            break;
+        case EBUSY:
+            return PROBLEM_MX_EBUSY;
+            break;
+        case EINVAL:
+            return PROBLEM_MX_EINVAL;
+            break;
+        default:
+            return PROBLEM_UNEXPECTED;
+            break;
+    }
+
+    return PROBLEM_UNEXPECTED;
+}
+
+static thpool_error_t pthread_create_error_transform( int src )
+{
+    switch ( src )
+    {
+    case EAGAIN:
+        return PROBLEM_EAGAIN;
+        break;
+    case EINVAL:
+        return PROBLEM_EINVAL;
+        break;
+    case EPERM:
+        return PROBLEM_EPERM;
+        break;
+    default:
+        return PROBLEM_UNEXPECTED;
+        break;
+    }
+
+    return PROBLEM_UNEXPECTED;
+}
+
+
+static thpool_error_t pthread_join_error_transform( int src )
+{
+
+    switch (src)
+    {
+    case EDEADLK:
+        
+        break;
+    
+    default:
+        break;
+    }
+
+    return PROBLEM_UNEXPECTED
+}
+
+static int creator_pthreads( threadPool_t* src )
 {
     for (int i = 0; i < MAX_THREADS; i++)
     {
-        if ( pthread_create( &(src->threadsArray[ i ]), NULL, &pthreadpool_assigner, src ) != 0  )
+        int ret = pthread_create( &(src->threadsArray[ i ]), NULL, &pthreadpool_assigner, src );
+        if( ret != 0 )
         {
-            perror("Error creating the threads");
-            return false;
+            pthread_join( src->threadsArray[ i ], NULL );
+            return ret;
         }
     }
 
-    return true;
+    return PROBLEM_NA;
 }
 
-static bool destructor_pthreads( threadPool_t* src )
+static int destructor_pthreads( threadPool_t* src )
 {
     for (int i = 0; i < MAX_THREADS; i++)
     {
@@ -29,20 +100,35 @@ static bool destructor_pthreads( threadPool_t* src )
         }
     }
 
-    return true;
+    return PROBLEM_NA;
 }
 
-void pthreadpool_init( threadPool_t* src )
+thpool_error_t pthreadpool_init( threadPool_t* src )
 {
     src->numTasks   = 0;        // Initialization of the index
     src->queue_top  = 0;        // Initialization of the index 
     src->queue_last = 0;        // Initialization of the index
     src->stop       = false;    // Initialization of the index 
 
-    pthread_mutex_init( &(src->lock), NULL );   //Initialization of the mutex
-    pthread_cond_init( &(src->notify), NULL );  //Initialization of the condition variable
+    int mux_ret = pthread_mutex_init( &(src->lock), NULL );   //Initialization of the mutex
+    if ( mux_ret != PROBLEM_NA )
+    {
+        return pthread_mutex_init_error_transform( mux_ret );
+    }
+    
+    int cond_ret = pthread_cond_init( &(src->notify), NULL );  //Initialization of the condition variable
+    if ( cond_ret != PROBLEM_NA )
+    {
+        return pthread_cond_init_error_transform( cond_ret );
+    }
+    
+    int thpool_ret = creator_pthreads( src );   //Creation of the threads
+    if ( thpool_ret != PROBLEM_NA )
+    {
+        return pthread_create_error_transform( thpool_ret );
+    }
 
-    creator_pthreads( src );   //Creation of the threads
+    return PROBLEM_NA;
 
 }
 
