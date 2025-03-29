@@ -63,6 +63,14 @@ void pthreadpool_add_task( threadPool_t* dst, void* (*fun)( void* arg ), void* a
  */
 void pthreadpool_destroy( threadPool_t* src );
 
+/**
+ * @brief pthreadpool_assigner
+ * @details function to assigne task to the threads 
+ * @author Antonio Lotti
+ * @date 23/03/2025
+ * @param src pointer to the threadPool_t
+ * @return nothing
+ */
 void* pthreadpool_assigner( void* src );
 
 #endif
