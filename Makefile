@@ -1,7 +1,8 @@
 #============NAMES INFO===============#
-DEBG_NAME	:=	debg_exce		#Debuging 	executable name
-FINAL_NAME	:=	final_exce		#Final 		executable name
-DEF_NAME	=	exe
+PROJECT_NAME	:=	pthreadpool		#Project 	name
+DEBG_NAME		:=	debg_exce		#Debuging 	executable name
+FINAL_NAME		:=	final_exce		#Final 		executable name
+DEF_NAME		=	exe
 
 #============TOOL MACROS===============#
 CXX 		:= gcc
@@ -128,6 +129,7 @@ setup:
 	mkdir -p $(SRC_DIR) $(INC_DIR) $(OBJ_DIR) $(BIN_DIR) $(DOC_DIR) $(TST_DIR)
 	mkdir -p $(TST_DIR)/$(TST_MODULES_DIR)
 	mkdir -p $(OBJ_DIR)/$(TST_DIR)
+	touch $(TST_DIR)/test_$(PROJECT_NAME).c
 	doxygen -g
 
 doc:
