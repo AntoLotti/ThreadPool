@@ -8,6 +8,7 @@ CXX 		:= gcc
 STDFLAG 	:= -std=c11 -pthread
 CXXFLAGS	:= 
 DBGFLAGS	:= -g
+TSTFLAGS	:= -lcmocka
 CCOBJFLAGS	:= $(CXXFLAGS) -c
 
 #============DIRECTORIES===============#
@@ -19,7 +20,7 @@ OBJ_DIR	:=	obj
 BIN_DIR	:=	bin
 DOC_DIR	:=	doc
 
-MOCKS_DIR := mocks
+TST_MODULES_DIR := test_modules
 
 EXE_DIR :=	$(OBJ_DIR)
 
@@ -59,15 +60,21 @@ LIBS    := -L./ -L/$(LIB_DIR)
 #RPATH="-Wl,-rpath,$(LIBRARY_DIR):$(THIRD_PARTY_LIB_DIR)"
 RPATH	="-Wl,-rpath,$(LIB_DIR)"
 
-#==============FLAGS===================#
-#CPPFLAGS	=							#Pre proccesor Flags
-CFLAGS 		= $(WALL) $(STDFLAG) $(INC)	#Compiler Flags 
-
+#============DEBUG FLAGS================#
 ifeq ($(strip $(MODE)), debg)
-	CFLAGS 	+= -g
+	CFLAGS 	+= $(DBGFLAGS)
 endif
 
-LDFFLAGS	= $(LIBS) $(RPATH)			#Linker Flags
+#============TESTA FLAGS================#
+ifeq ($(strip $(MODE)), test)
+	CFLAGS 	+= $(TSTFLAGS)
+endif
+
+#============ALL FLAGS===================#
+#CPPFLAGS	=								#Pre proccesor Flags
+CFLAGS 		+= $(WALL) $(STDFLAG) $(INC)	#Compiler Flags 
+
+LDFFLAGS	= $(LIBS) $(RPATH)				#Linker Flags
 
 #==============EXEC====================#
 
@@ -119,7 +126,7 @@ $(OBJ_3): $(SRC_3)
 
 setup:
 	mkdir -p $(SRC_DIR) $(INC_DIR) $(OBJ_DIR) $(BIN_DIR) $(DOC_DIR) $(TST_DIR)
-	mkdir -p $(TST_DIR)/$(MOCKS_DIR)
+	mkdir -p $(TST_DIR)/$(TST_MODULES_DIR)
 	mkdir -p $(OBJ_DIR)/$(TST_DIR)
 	doxygen -g
 
@@ -127,5 +134,6 @@ doc:
 	doxygen Doxyfile
 
 clean:
-	rm -f $(OBJ_DIR)/* 
+	rm -f $(OBJ_DIR)/*
+	
 	rm -f $(BIN_DIR)/*
