@@ -1,80 +1,9 @@
 //========INCLUDES========//
 #include <common.h>
-#include <threadPool.h>
+#include <pthreadpool.h>
 
 //========FUN DEF=========//
-
-static thpool_error_t pthread_cond_init_error_transform( int src )
-{
-    return PROBLEM_UNEXPECTED;
-}
-
-static thpool_error_t pthread_mutex_init_error_transform( int src )
-{
-    switch (src) 
-    {
-        case EAGAIN:
-            return PROBLEM_MX_EAGAIN;
-            break;
-        case ENOMEM:
-            return PROBLEM_MX_ENOMEM;
-            break;
-        case EPERM:
-            return PROBLEM_MX_EPERM;
-            break;
-        case EBUSY:
-            return PROBLEM_MX_EBUSY;
-            break;
-        case EINVAL:
-            return PROBLEM_MX_EINVAL;
-            break;
-        default:
-            return PROBLEM_UNEXPECTED;
-            break;
-    }
-
-    return PROBLEM_UNEXPECTED;
-}
-
-static thpool_error_t pthread_create_error_transform( int src )
-{
-    switch ( src )
-    {
-    case EAGAIN:
-        return PROBLEM_EAGAIN;
-        break;
-    case EINVAL:
-        return PROBLEM_EINVAL;
-        break;
-    case EPERM:
-        return PROBLEM_EPERM;
-        break;
-    default:
-        return PROBLEM_UNEXPECTED;
-        break;
-    }
-
-    return PROBLEM_UNEXPECTED;
-}
-
-
-static thpool_error_t pthread_join_error_transform( int src )
-{
-
-    switch (src)
-    {
-    case EDEADLK:
-        
-        break;
-    
-    default:
-        break;
-    }
-
-    return PROBLEM_UNEXPECTED
-}
-
-static int creator_pthreads( threadPool_t* src )
+static bool creator_pthreads( pthreadpool_t* src )
 {
     for (int i = 0; i < MAX_THREADS; i++)
     {
@@ -89,7 +18,7 @@ static int creator_pthreads( threadPool_t* src )
     return PROBLEM_NA;
 }
 
-static int destructor_pthreads( threadPool_t* src )
+static bool destructor_pthreads( pthreadpool_t* src )
 {
     for (int i = 0; i < MAX_THREADS; i++)
     {
@@ -103,36 +32,33 @@ static int destructor_pthreads( threadPool_t* src )
     return PROBLEM_NA;
 }
 
-thpool_error_t pthreadpool_init( threadPool_t* src )
+int pthreadpool_init( pthreadpool_t* src )
 {
     src->numTasks   = 0;        // Initialization of the index
     src->queue_top  = 0;        // Initialization of the index 
     src->queue_last = 0;        // Initialization of the index
     src->stop       = false;    // Initialization of the index 
 
-    int mux_ret = pthread_mutex_init( &(src->lock), NULL );   //Initialization of the mutex
-    if ( mux_ret != PROBLEM_NA )
+    if ( pthread_mutex_init( &(src->lock), NULL ) != PROBLEM_NA )       //Initialization of the mutex
     {
-        return pthread_mutex_init_error_transform( mux_ret );
+        return 1;
     }
     
-    int cond_ret = pthread_cond_init( &(src->notify), NULL );  //Initialization of the condition variable
-    if ( cond_ret != PROBLEM_NA )
+    if ( pthread_cond_init( &(src->notify), NULL ) != PROBLEM_NA )      //Initialization of the condition variable
     {
-        return pthread_cond_init_error_transform( cond_ret );
+        return 2;
     }
-    
-    int thpool_ret = creator_pthreads( src );   //Creation of the threads
-    if ( thpool_ret != PROBLEM_NA )
+     
+    if ( creator_pthreads( src ) != PROBLEM_NA )                        //Creation of the threads
     {
-        return pthread_create_error_transform( thpool_ret );
+        return 3;
     }
 
     return PROBLEM_NA;
 
 }
 
-void pthreadpool_add_task( threadPool_t* dst, void* arg, void* (*fun)( void* arg ) )
+void pthreadpool_add_task( pthreadpool_t* dst, void* (*fun)( void* arg ), void* arg )
 {
     pthread_mutex_lock( &(dst->lock) );
 
@@ -156,7 +82,7 @@ void pthreadpool_add_task( threadPool_t* dst, void* arg, void* (*fun)( void* arg
 }
 
 
-void pthreadpool_destroy( threadPool_t* src )
+void pthreadpool_destroy( pthreadpool_t* src )
 {
     pthread_mutex_lock( &(src->lock) );         // Make sure that only one thread access this function
     src->stop = true;                           // Ensured the condition
@@ -172,7 +98,7 @@ void pthreadpool_destroy( threadPool_t* src )
 
 void* pthreadpool_assigner( void* src )
 {
-    threadPool_t* thpool = (threadPool_t*)src ;
+    pthreadpool_t* thpool = (pthreadpool_t*)src ;
 
     while ( 1 )
     {
