@@ -1,141 +1,57 @@
-#============NAMES INFO===============#
-PROJECT_NAME	:=	pthreadpool		#Project 	name
-DEBG_NAME		:=	debg_exce		#Debuging 	executable name
-FINAL_NAME		:=	final_exce		#Final 		executable name
-DEF_NAME		=	exe
+# ============ PROJECT CONFIG ============ #
+PROJECT     := pthreadpool
+TARGET      := bin/test_$(PROJECT)
 
-#============TOOL MACROS===============#
-CXX 		:= gcc
-STDFLAG 	:= -std=c11 -pthread
-CXXFLAGS	:= 
-DBGFLAGS	:= -g
-TSTFLAGS	:= -lcmocka
-CCOBJFLAGS	:= $(CXXFLAGS) -c
+# ============ COMPILER CONFIG ============ #
+CC          := gcc
+CFLAGS      := -std=c11 -pthread -Wall -Wextra -Werror
+INCLUDES    := -Iincludes -I/usr/local/include
+LDFLAGS     := -L/usr/local/lib64 -lcmocka -Wl,-rpath=/usr/local/lib64 -pthread
 
-#============DIRECTORIES===============#
-SRC_DIR	:= 	src
-INC_DIR	:=	includes
-LIB_DIR	:=	lib
-TST_DIR	:=	test
-OBJ_DIR	:=	obj
-BIN_DIR	:=	bin
-DOC_DIR	:=	doc
+# ============ DIRECTORY STRUCTURE ============ #
+SRC_DIR     := src
+OBJ_DIR     := obj
+BIN_DIR     := bin
+TEST_DIR    := test
 
-TST_MODULES_DIR := test_modules
+# ============ FILE DISCOVERY ============ #
+SRCS        := $(wildcard $(SRC_DIR)/*.c)
+OBJS        := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
+TEST_SRC    := $(TEST_DIR)/test_$(PROJECT).c
+TEST_OBJ    := $(OBJ_DIR)/test_$(PROJECT).o
 
-EXE_DIR :=	$(OBJ_DIR)
+# ============ BUILD RULES ============ #
+.PHONY: all clean test
 
-#==============SOURCES=================#
-#SOURCE 1
-NAME1	:= main
-SRC_1 	:= $(SRC_DIR)/$(NAME1).c
-OBJ_1 	:= $(OBJ_DIR)/$(NAME1).o
+all: $(TARGET)
 
-#SOURCE 2
-NAME2	:= task
-SRC_2 	:= $(SRC_DIR)/$(NAME2).c
-OBJ_2 	:= $(OBJ_DIR)/$(NAME2).o
+# Link final executable
+$(TARGET): $(OBJS) $(TEST_OBJ) | $(BIN_DIR)
+	$(CC) $^ $(LDFLAGS) -o $@
+	@echo "Successfully built $@"
 
-#SOURCE 3
-NAME3	:= threadPool
-SRC_3 	:= $(SRC_DIR)/$(NAME3).c
-OBJ_3 	:= $(OBJ_DIR)/$(NAME3).o
+# Compile main source files
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-#====TESTS====#
-TEST1		:=  
-TST_SRC_1	:=	$(TST_DIR)/$(TEST1).c
-TST_OBJ_1	:=	$(OBJ_DIR)/$(TEST1).o
+# Compile test file
+$(TEST_OBJ): $(TEST_SRC) | $(OBJ_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
+# Create directories if needed
+$(BIN_DIR) $(OBJ_DIR):
+	mkdir -p $@
 
-#==============INCLUDES================#
-INC     := -I./ -I ./$(INC_DIR)
+# Run tests
+test: $(TARGET)
+	@echo "\n=== RUNNING TESTS ==="
+	./$(TARGET)
 
-#==============WARNINGS================#
-WALL	:=	-Wall -Wextra -Werror -Wwrite-strings -pedantic -Warray-bounds \
-	-Wformat-overflow -Wformat-truncation -Wstringop-overflow \
-	-Wstringop-truncation
-
-#==============LIBRARIES===============#
-LIBS    := -L./ -L/$(LIB_DIR)
-# RPATH IS USED FOR LINKING LIBS IN SPECIFIC PATH
-#RPATH="-Wl,-rpath,$(LIBRARY_DIR):$(THIRD_PARTY_LIB_DIR)"
-RPATH	="-Wl,-rpath,$(LIB_DIR)"
-
-#============DEBUG FLAGS================#
-ifeq ($(strip $(MODE)), debg)
-	CFLAGS 	+= $(DBGFLAGS)
-endif
-
-#============TESTA FLAGS================#
-ifeq ($(strip $(MODE)), test)
-	CFLAGS 	+= $(TSTFLAGS)
-endif
-
-#============ALL FLAGS===================#
-#CPPFLAGS	=								#Pre proccesor Flags
-CFLAGS 		+= $(WALL) $(STDFLAG) $(INC)	#Compiler Flags 
-
-LDFFLAGS	= $(LIBS) $(RPATH)				#Linker Flags
-
-#==============EXEC====================#
-
-MODE ?= final  					#Default mode
-
-ifeq ($(strip $(MODE)), test)
-    DEF_NAME := $(TEST_NAME)
-else ifeq ($(strip $(MODE)), debg)
-    DEF_NAME := $(DEBG_NAME)
-else
-    DEF_NAME := $(FINAL_NAME)
-endif
-
-EXE_NAME 	:= $(DEF_NAME)
-
-FINAL_EXE	:=	$(EXE_DIR)/$(EXE_NAME)
-
-#==============ALL OBJ=================#
-ALL_OBJS = $(OBJ_1) $(OBJ_2) $(OBJ_3)
-
-#===============TARGETS=================#
-all: $(FINAL_EXE)
-	@printf "\n"
-	@echo "----------------------"
-	@echo "Compiling project....."
-	@echo "----------------------"
-	@printf "\n"
-
-$(FINAL_EXE): $(ALL_OBJS)
-	$(CXX) $^ -o $@ $(LDFFLAGS)
-
-$(OBJ_1): $(SRC_1)
-	@printf "\n"
-	@echo "----------------------"
-	$(CXX) $(CFLAGS) -c $< -o $@  
-	@echo "----------------------"
-
-$(OBJ_2): $(SRC_2)
-	@printf "\n"
-	@echo "----------------------"
-	$(CXX) $(CFLAGS) -c $< -o $@
-	@echo "----------------------"
-
-$(OBJ_3): $(SRC_3)
-	@printf "\n"
-	@echo "----------------------"
-	$(CXX) $(CFLAGS) -c $< -o $@
-	@echo "----------------------"
-
-setup:
-	mkdir -p $(SRC_DIR) $(INC_DIR) $(OBJ_DIR) $(BIN_DIR) $(DOC_DIR) $(TST_DIR)
-	mkdir -p $(TST_DIR)/$(TST_MODULES_DIR)
-	mkdir -p $(OBJ_DIR)/$(TST_DIR)
-	touch $(TST_DIR)/test_$(PROJECT_NAME).c
-	doxygen -g
-
-doc:
-	doxygen Doxyfile
-
+# Clean build artifacts
 clean:
-	rm -f $(OBJ_DIR)/*
-	
-	rm -f $(BIN_DIR)/*
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	@echo "Clean complete"
+
+# Debug build (adds -g flag)
+debug: CFLAGS += -g
+debug: clean all
