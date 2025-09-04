@@ -2,35 +2,23 @@
 #define PTHREADPOOL_H
 
 //========INCLUDES========//
-#include <common.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+//Threads
+#include <pthread.h>
+#include <unistd.h>
+//Errors
+#include <errno.h>
 
 //========DEFINES=========//
 #define MAX_THREADS     5
 #define MAX_TASKS       40
 
 //========TYPES===========//
-typedef enum thpool_error_e
-{
-    PROBLEM_NA              = 0,
-    
-    PROBLEM_EAGAIN          = 1,    //Insufficient   resources  to  create  anothe thread.
-    PROBLEM_EINVAL          = 2,    //Invalid settings in attr.
-    PROBLEM_EPERM           = 3,    //No  permission  to  set the scheduling policy and parameters specified in attr.
-    PROBLEM_MX_EAGAIN       = 4,
-    PROBLEM_MX_EINVAL       = 5,    //The  mutex  has not been properly initialized.
-    PROBLEM_MX_EPERM        = 6,
-    PROBLEM_MX_ENOMEM       = 7,
-    PROBLEM_MX_EBUSY        = 8,    //The mutex has already been initialized and is in use.
-    PROBLEM_JOIN_EDEADLK    = 9,    //A  deadlock  was  detected or  thread specifies the calling thread.
-    PROBLEM_JOIN_EINVAL     = 10,   //Another  thread  is  already  waiting to join with this thread.
-    PROBLEM_JOIN_ESRCH      = 11,   //No thread with the ID thread could be found.
-    
-    PROBLEM_UNEXPECTED  = 99,
-} thpool_error_t;
-
 typedef struct task_s
 {
-    void* (*taskAction)( void* arg );       //Pointer to a function that return a void pointer and recive a void pointer as argument
+    void* (*task_action)( void* arg );      //Pointer to a function that return a void pointer and recive a void pointer as argument
     void* arg;                              //Pointer to the arguments of the functions
 }task_t;
 
@@ -57,7 +45,7 @@ typedef struct pthreadpool_s
  * @param src pointer to a pthreadpool_t structure
  * @return return 0 on success and a non-zero error code on error.
  */
-int pthreadpool_init( pthreadpool_t* src );
+void pthreadpool_init( pthreadpool_t* src );
 
 /**
  * @brief pthreadpool_add_task

@@ -2,23 +2,25 @@
 #include <common.h>
 #include <pthreadpool.h>
 
+//========FUN DEC=========//
+static bool creator_pthreads( pthreadpool_t *src );
+static bool destructor_pthreads( pthreadpool_t *src );
+
 //========FUN DEF=========//
-static bool creator_pthreads( pthreadpool_t* src )
+static bool creator_pthreads( pthreadpool_t *src )
 {
     for (int i = 0; i < MAX_THREADS; i++)
     {
-        int ret = pthread_create( &(src->threadsArray[ i ]), NULL, &pthreadpool_assigner, src );
-        if( ret != 0 )
+        if( pthread_create( &(src->threadsArray[ i ]), NULL, &pthreadpool_assigner, src ) != 0 )
         {
             pthread_join( src->threadsArray[ i ], NULL );
-            return ret;
+            return false;
         }
     }
-
-    return PROBLEM_NA;
+    return true;
 }
 
-static bool destructor_pthreads( pthreadpool_t* src )
+static bool destructor_pthreads( pthreadpool_t *src )
 {
     for (int i = 0; i < MAX_THREADS; i++)
     {
@@ -29,36 +31,24 @@ static bool destructor_pthreads( pthreadpool_t* src )
         }
     }
 
-    return PROBLEM_NA;
+    return true;
 }
 
-int pthreadpool_init( pthreadpool_t* src )
+void pthreadpool_init( pthreadpool_t* src )
 {
     src->numTasks   = 0;        // Initialization of the index
     src->queue_top  = 0;        // Initialization of the index 
     src->queue_last = 0;        // Initialization of the index
     src->stop       = false;    // Initialization of the index 
 
-    if ( pthread_mutex_init( &(src->lock), NULL ) != PROBLEM_NA )       //Initialization of the mutex
-    {
-        return 1;
-    }
-    
-    if ( pthread_cond_init( &(src->notify), NULL ) != PROBLEM_NA )      //Initialization of the condition variable
-    {
-        return 2;
-    }
-     
-    if ( creator_pthreads( src ) != PROBLEM_NA )                        //Creation of the threads
-    {
-        return 3;
-    }
+    pthread_mutex_init( &(src->lock), NULL );   //Initialization of the mutex
+    pthread_cond_init( &(src->notify), NULL );  //Initialization of the condition variable
 
-    return PROBLEM_NA;
+    creator_pthreads( src );                    //Creation of the threads
 
 }
 
-void pthreadpool_add_task( pthreadpool_t* dst, void* (*fun)( void* arg ), void* arg )
+void pthreadpool_add_task( pthreadpool_t *dst, void *(*fun)( void *arg ), void *arg )
 {
     pthread_mutex_lock( &(dst->lock) );
 
@@ -82,7 +72,7 @@ void pthreadpool_add_task( pthreadpool_t* dst, void* (*fun)( void* arg ), void* 
 }
 
 
-void pthreadpool_destroy( pthreadpool_t* src )
+void pthreadpool_destroy( pthreadpool_t *src )
 {
     pthread_mutex_lock( &(src->lock) );         // Make sure that only one thread access this function
     src->stop = true;                           // Ensured the condition
@@ -96,7 +86,7 @@ void pthreadpool_destroy( pthreadpool_t* src )
 
 }
 
-void* pthreadpool_assigner( void* src )
+void* pthreadpool_assigner( void *src )
 {
     pthreadpool_t* thpool = (pthreadpool_t*)src ;
 
