@@ -2,6 +2,7 @@
 #define PTHREADPOOL_H
 
 //========INCLUDES========//
+//Standars
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -18,65 +19,59 @@
 //========TYPES===========//
 typedef struct task_s
 {
-    void* (*task_action)( void* arg );      //Pointer to a function that return a void pointer and recive a void pointer as argument
-    void* arg;                              //Pointer to the arguments of the functions
+    void *(*task_action)( void* arg );      //Pointer to a function that return a void pointer and recive a void pointer as argument
+    void *arg;                              //Pointer to the arguments of the functions
 }task_t;
 
 typedef struct pthreadpool_s
 {
-    pthread_mutex_t lock;                   // A mutex to synchronize access to the task queue. Ensures that only one thread at a time modifies the queue.
-    pthread_cond_t  notify;                 // A condition variable used to notify worker threads when new tasks are available.
-    pthread_t   threadsArray[MAX_THREADS];  //
-    task_t      taskQueue[MAX_TASKS];       //
-    int         numTasks;                   // The number of tasks currently in the queue.
-    int         queue_top;                  // The index of the first task in the queue.
-    int         queue_last;                 // The index of the last task in the queue.
-    bool        stop;                       // A flag to indicate if the pool should stop executing (used for shutdown; true to stop ).
+#ifdef DEBUG
+    int         thread_id;                  //Id of the thread
+#endif
 }pthreadpool_t;
 
 
 //====FUN DECLARATIONS===//
-
 /**
  * @brief pthreadpool_init
  * @details function to initialice a threadpool
  * @author Antonio Lotti 
- * @date 23/03/2025
+ * @date 04/09/2025
  * @param src pointer to a pthreadpool_t structure
  * @return return 0 on success and a non-zero error code on error.
  */
-void pthreadpool_init( pthreadpool_t* src );
+void pthreadpool_init( pthreadpool_t *src );
 
 /**
  * @brief pthreadpool_add_task
  * @details function to add a task to the queue of the threadpool
  * @author Antonio Lotti 
- * @date 23/03/2025
+ * @date 04/039/2025
  * @param dst pointer to a pthreadpool_t structure
  * @param arg void pointer to the arguments of the task
  * @param fun pointer to the task function
  * @return nothing
  */
-void pthreadpool_add_task( pthreadpool_t* dst, void* (*fun)( void* arg ), void* arg );
+void pthreadpool_add_task( pthreadpool_t *dst, void *(*fun)( void *arg ), void *arg );
 
 /**
  * @brief pthreadpool_destroy
  * @details function to destroy a threadpool structure
  * @author Antonio Lotti 
- * @date 23/03/2025
+ * @date 04/09/2025
  * @param src pointer to a pthreadpool_t structure
  * @return nothing
  */
-void pthreadpool_destroy( pthreadpool_t* src );
+void pthreadpool_destroy( pthreadpool_t *src );
 
 /**
  * @brief pthreadpool_assigner
  * @details function to assigne task to the threads 
  * @author Antonio Lotti
- * @date 23/03/2025
+ * @date 04/09/2025
  * @param src pointer to the pthreadpool_t
  * @return nothing
  */
-void* pthreadpool_assigner( void* src );
+void* pthreadpool_assigner( void *src );
 
 #endif
