@@ -8,6 +8,7 @@ static bool destructor_pthreads( pthreadpool_t *src );
 //========FUN DEF=========//
 static bool creator_pthreads( pthreadpool_t* src )
 {
+    pthread_mutex_lock(&(src->lock));
     for (size_t i = 0; i < MAX_THREADS; i++)
     {
         if (pthread_create(src->threads[i], NULL, pthreadpool_function, src ) != 0 )
@@ -15,6 +16,7 @@ static bool creator_pthreads( pthreadpool_t* src )
             return false;
         }
     }
+    pthread_mutex_unlock(&(src->lock));
     return true;
 }
 
